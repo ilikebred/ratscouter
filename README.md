@@ -1,2 +1,2 @@
-# 830scout.github.io
-Frc scouting for 830
+# ratscouter
+Frc scouting for 830 The RatPack
