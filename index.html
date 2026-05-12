@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RatScouter</title>
+<title>FRC Scout</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif;background:#f8f9fa;color:#1a1a1a;min-height:100vh}
@@ -62,7 +62,7 @@ button{border:none;border-radius:8px;padding:9px 18px;font-size:14px;cursor:poin
 <body>
 <div class="header">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-  <h1>RatScouter</h1>
+  <h1>FRC Scout</h1>
   <span class="hs" id="sync-status">Loading…</span>
 </div>
 <div class="container" id="app"></div>
@@ -71,8 +71,8 @@ button{border:none;border-radius:8px;padding:9px 18px;font-size:14px;cursor:poin
 // ─────────────────────────────────────────
 //  🔧 PASTE YOUR SUPABASE CREDENTIALS HERE
 // ─────────────────────────────────────────
-const SUPABASE_URL = 'https://scsepypxlrtfahvkcilk.supabase.co';       // e.g. https://xxxx.supabase.co
-const SUPABASE_ANON_KEY = 'sb_publishable__s_rBp7SK9BOT3uCGJv7Bg_idM796oD';
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';       // e.g. https://xxxx.supabase.co
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 // ─────────────────────────────────────────
 
 const TBA = 'iKwYPFM2U6Qnn2VRXyMclANWgdYrWDHI63wr69b9mGHPvB9k1gvZbNi9f3qljuD7';
@@ -309,14 +309,17 @@ function renderScoutTab(avail, unavail){
 
 function renderLog(){
   const all=[];
-  Object.entries(state.scoutedData).forEach(([team,ms])=>(ms||[]).forEach(m=>all.push({...m,team})));
+  Object.entries(state.scoutedData).forEach(([team,ms])=>(ms||[]).forEach((m,i)=>all.push({...m,team,idx:i})));
   all.sort((a,b)=>a.matchNum-b.matchNum);
   if(!all.length) return `<div class="card"><div style="color:#999;font-size:14px">No matches scouted yet.</div></div>`;
   return `<div class="card"><h2>All Entries (${all.length})</h2>
     ${all.map(m=>`<div class="match-item">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <span class="mnum">Q${m.matchNum} · Team ${m.team}</span>
-        <span class="mresult ${m.result}">${m.result.toUpperCase()}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="mresult ${m.result}">${m.result.toUpperCase()}</span>
+          <button class="btn-sm btn-danger" onclick="delFromLog(${m.team},${m.idx})">✕</button>
+        </div>
       </div>
       <div style="font-size:11px;color:#666;margin-top:5px">
         Auto:${m.autoL1||0}/${m.autoL2||0}/${m.autoL3||0}/${m.autoL4||0} coral · ${m.autoAlgae||0}+${m.autoAlgaeProc||0} algae · mob:${m.mobility||'No'} |
@@ -325,6 +328,12 @@ function renderLog(){
       </div>
     </div>`).join('')}
   </div>`;
+}
+
+function delFromLog(team, idx){
+  state.scoutedData[team].splice(idx,1);
+  if(!state.scoutedData[team].length) delete state.scoutedData[team];
+  saveAll(); render();
 }
 
 function toggleUnavail(e,num){
