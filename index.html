@@ -386,26 +386,32 @@ function renderDetail(){
       }
     </div>
 
-    <div class="section-title">⚡ Autonomous</div>
-    <label style="font-size:12px;color:#555;font-weight:500">Coral by level</label>
+    <div class="section-title">⚡ Autonomous (0:15)</div>
+    <label style="font-size:12px;color:#555;font-weight:500">Coral scored</label>
     <div class="counter-grid">
-      ${['L1','L2','L3','L4'].map(l=>`<div class="counter"><label>${l}</label>${ctr('auto'+l)}</div>`).join('')}
-      <div class="counter"><label>Algae Net</label>${ctr('autoAlgae')}</div>
-      <div class="counter"><label>Algae Proc</label>${ctr('autoAlgaeProc')}</div>
+      <div class="counter"><label>L1 (3pts)</label>${ctr('autoL1')}</div>
+      <div class="counter"><label>L2 (4pts)</label>${ctr('autoL2')}</div>
+      <div class="counter"><label>L3 (6pts)</label>${ctr('autoL3')}</div>
+      <div class="counter"><label>L4 (7pts)</label>${ctr('autoL4')}</div>
+      <div class="counter"><label>Algae Net (4pts)</label>${ctr('autoAlgae')}</div>
+      <div class="counter"><label>Algae Proc (6pts)</label>${ctr('autoAlgaeProc')}</div>
     </div>
-    <div style="margin-top:12px">
-      <label style="font-size:12px;color:#555;font-weight:500">Mobility</label>
+    <div style="margin-top:10px">
+      <label style="font-size:12px;color:#555;font-weight:500">Leave starting zone?</label>
       <div class="toggle-row">${togs('mobility',['Yes','No'])}</div>
     </div>
 
-    <div class="section-title">🎮 Teleop</div>
-    <label style="font-size:12px;color:#555;font-weight:500">Coral by level</label>
+    <div class="section-title">🎮 Teleop (2:15)</div>
+    <label style="font-size:12px;color:#555;font-weight:500">Coral scored</label>
     <div class="counter-grid">
-      ${['L1','L2','L3','L4'].map(l=>`<div class="counter"><label>${l}</label>${ctr('tele'+l)}</div>`).join('')}
-      <div class="counter"><label>Algae Net</label>${ctr('teleAlgae')}</div>
-      <div class="counter"><label>Algae Proc</label>${ctr('teleAlgaeProc')}</div>
+      <div class="counter"><label>L1 (2pts)</label>${ctr('teleL1')}</div>
+      <div class="counter"><label>L2 (3pts)</label>${ctr('teleL2')}</div>
+      <div class="counter"><label>L3 (4pts)</label>${ctr('teleL3')}</div>
+      <div class="counter"><label>L4 (5pts)</label>${ctr('teleL4')}</div>
+      <div class="counter"><label>Algae Net (4pts)</label>${ctr('teleAlgae')}</div>
+      <div class="counter"><label>Algae Proc (6pts)</label>${ctr('teleAlgaeProc')}</div>
     </div>
-    <div style="margin-top:12px">
+    <div style="margin-top:10px">
       <label style="font-size:12px;color:#555;font-weight:500">Fouls committed</label>
       <div class="ctr-row" style="justify-content:flex-start;gap:8px;margin-top:4px">
         <button class="ctr-btn" onclick="adj('fouls',-1)">−</button>
@@ -413,17 +419,25 @@ function renderDetail(){
         <button class="ctr-btn" onclick="adj('fouls',1)">+</button>
       </div>
     </div>
+    <div style="margin-top:10px">
+      <label style="font-size:12px;color:#555;font-weight:500">Defense played?</label>
+      <div class="toggle-row">${togs('defense',['Yes','No'])}</div>
+    </div>
+    <div style="margin-top:10px">
+      <label style="font-size:12px;color:#555;font-weight:500">Robot died / disabled?</label>
+      <div class="toggle-row">${togs('died',['Yes','No'])}</div>
+    </div>
 
-    <div class="section-title">🏁 Endgame</div>
-    <label style="font-size:12px;color:#555;font-weight:500">Climb result</label>
-    <div class="toggle-row">${togs('endgame',['None','Park','Shallow','Deep'])}</div>
+    <div class="section-title">🏁 Endgame — Barge</div>
+    <label style="font-size:12px;color:#555;font-weight:500">End position</label>
+    <div class="toggle-row">${togs('endgame',['None','Park (2pts)','Shallow Cage (6pts)','Deep Cage (12pts)'])}</div>
     <div style="margin-top:14px">
       <label style="font-size:12px;color:#555;font-weight:500">Match result</label>
       <div class="toggle-row">${togs('result',['Win','Loss','Tie'])}</div>
     </div>
     <div style="margin-top:14px">
       <label style="font-size:12px;color:#555;font-weight:500;display:block;margin-bottom:4px">Notes</label>
-      <textarea id="notes" rows="2" style="width:100%" placeholder="Robot issues, defense, strategy…"></textarea>
+      <textarea id="notes" rows="2" style="width:100%" placeholder="Defense, tippy, fast cycle, strategic notes…"></textarea>
     </div>
     <button class="btn-primary" style="width:100%;margin-top:16px;padding:11px" onclick="saveMatch()">Save Match Entry</button>
   </div>
