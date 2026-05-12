@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RatScouter</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f8f9fa;color:#1a1a1a;min-height:100vh}
+.header{background:#1a237e;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px}
+.header h1{font-size:18px;font-weight:600}
+.hs{font-size:12px;opacity:.7;margin-left:auto}
+.container{max-width:900px;margin:0 auto;padding:20px}
+.card{background:#fff;border-radius:12px;border:1px solid #e0e0e0;padding:20px;margin-bottom:16px}
+.card h2{font-size:15px;font-weight:600;margin-bottom:14px;color:#1a237e}
+input[type=text],input[type=number],textarea{border:1px solid #ddd;border-radius:8px;padding:9px 13px;font-size:14px;background:#fafafa;transition:border .2s;font-family:inherit}
+input:focus,textarea:focus{outline:none;border-color:#3949ab;background:#fff}
+button{border:none;border-radius:8px;padding:9px 18px;font-size:14px;cursor:pointer;font-weight:500;transition:all .2s;font-family:inherit}
+.btn-primary{background:#1a237e;color:#fff}.btn-primary:hover{background:#3949ab}
+.btn-primary:disabled{background:#9fa8da;cursor:not-allowed}
+.btn-danger{background:#ffebee;color:#c62828}
+.btn-sm{padding:5px 12px;font-size:12px}
+.status{padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px}
+.info{background:#e3f2fd;color:#0d47a1}
+.success{background:#e8f5e9;color:#1b5e20}
+.error{background:#ffebee;color:#b71c1c}
+.warn{background:#fff8e1;color:#e65100}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:10px}
+.team-chip{border:1px solid #ddd;border-radius:10px;padding:10px;cursor:pointer;transition:all .2s;text-align:center;background:#fff;position:relative;user-select:none}
+.team-chip:hover{border-color:#3949ab;background:#e8eaf6}
+.team-chip.unavailable{opacity:.4;background:#f5f5f5;cursor:default}
+.tnum{font-size:16px;font-weight:700;color:#1a237e}
+.tname{font-size:10px;color:#555;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scouted-badge{font-size:9px;color:#43a047;margin-top:2px}
+.unavail-badge{position:absolute;top:4px;right:4px;background:#ef9a9a;color:#b71c1c;font-size:9px;border-radius:4px;padding:1px 4px}
+.back-btn{background:none;border:none;color:#3949ab;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:4px;padding:0;margin-bottom:14px;font-weight:500}
+.tabs{display:flex;gap:4px;margin-bottom:16px}
+.tab{padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid #ddd;background:#fff;font-weight:500}
+.tab.active{background:#1a237e;color:#fff;border-color:#1a237e}
+.sync-bar{background:#e8eaf6;border-radius:8px;padding:8px 14px;font-size:12px;color:#3949ab;display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:#43a047;flex-shrink:0;display:inline-block}
+.qual-list{max-height:200px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:8px;padding:6px;margin-top:4px}
+.qual-item{padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;transition:background .15s;line-height:1.4}
+.qual-item:hover{background:#e8eaf6}
+.qual-item.sel-q{background:#c5cae9;color:#1a237e;font-weight:600}
+.counter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.counter{border:1px solid #e0e0e0;border-radius:8px;padding:8px;text-align:center;background:#fafafa}
+.counter label{font-size:10px;color:#777;margin-bottom:4px;display:block}
+.ctr-row{display:flex;align-items:center;justify-content:center;gap:6px}
+.ctr-val{font-size:18px;font-weight:700;color:#1a237e;min-width:28px;text-align:center}
+.ctr-btn{width:28px;height:28px;border-radius:50%;border:1px solid #c5cae9;background:#e8eaf6;color:#1a237e;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.ctr-btn:hover{background:#c5cae9}
+.toggle-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.tog{padding:5px 14px;border-radius:20px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;transition:all .15s}
+.tog.on{background:#1a237e;color:#fff;border-color:#1a237e}
+.section-title{font-size:13px;font-weight:600;color:#3949ab;margin:16px 0 8px;border-bottom:1px solid #e8eaf6;padding-bottom:4px}
+.match-item{border:1px solid #e0e0e0;border-radius:8px;padding:12px;margin-bottom:8px;background:#fafafa}
+.mnum{font-weight:700;color:#1a237e;font-size:13px}
+.mresult{font-size:11px;padding:2px 8px;border-radius:12px;font-weight:600}
+.win{background:#c8e6c9;color:#1b5e20}.loss{background:#ffcdd2;color:#b71c1c}.tie{background:#fff9c4;color:#f57f17}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+  <h1>FRC Scout</h1>
+  <span class="hs" id="sync-status"></span>
+</div>
+<div class="container" id="app"></div>
+
+<script>
+const TBA='iKwYPFM2U6Qnn2VRXyMclANWgdYrWDHI63wr69b9mGHPvB9k1gvZbNi9f3qljuD7';
+
+let state={
+  screen:'home', eventCode:'', eventName:'', teams:[], unavailable:[],
+  scoutedData:{}, qualMatches:[], selectedTeam:null, activeTab:'scout',
+  _selMatch:null, _counters:{}, _toggles:{}
+};
+let saveTO=null;
+
+async function tba(path){
+  const r=await fetch('https://www.thebluealliance.com/api/v3'+path,{headers:{'X-TBA-Auth-Key':TBA}});
+  if(!r.ok) throw new Error(`TBA returned ${r.status} for ${path}`);
+  return r.json();
+}
+
+async function loadStorage(){
+  try{
+    const r=await window.storage.get('frc_scout_data',true);
+    if(r&&r.value){
+      const d=JSON.parse(r.value);
+      ['eventCode','eventName','teams','unavailable','scoutedData','qualMatches'].forEach(k=>{if(d[k]!==undefined)state[k]=d[k];});
+    }
+  }catch(e){}
+  render();
+}
+
+async function saveStorage(){
+  clearTimeout(saveTO);
+  saveTO=setTimeout(async()=>{
+    try{
+      const p={eventCode:state.eventCode,eventName:state.eventName,teams:state.teams,
+        unavailable:state.unavailable,scoutedData:state.scoutedData,qualMatches:state.qualMatches};
+      await window.storage.set('frc_scout_data',JSON.stringify(p),true);
+      setSS('Synced ✓',2500);
+    }catch(e){setSS('Sync failed');}
+  },700);
+}
+
+function setSS(msg,dur){
+  const el=document.getElementById('sync-status');
+  if(el)el.textContent=msg;
+  if(dur)setTimeout(()=>{if(el)el.textContent='';},dur);
+}
+
+function render(){
+  const app=document.getElementById('app');
+  if(state.screen==='home') app.innerHTML=renderHome();
+  else if(state.screen==='teams') app.innerHTML=renderTeams();
+  else if(state.screen==='team-detail') app.innerHTML=renderDetail();
+}
+
+/* ── HOME ── */
+function renderHome(){
+  return`<div class="card">
+    <h2>Load Event</h2>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <input type="text" id="ec" placeholder="e.g. 2025miket" value="${state.eventCode}" style="max-width:240px"
+        onkeydown="if(event.key==='Enter')loadEvent()">
+      <button class="btn-primary" id="load-btn" onclick="loadEvent()">Load Teams</button>
+    </div>
+    <div style="font-size:12px;color:#999;margin-top:8px">
+      TBA event key: 4-digit year + event code (e.g. <strong>2025milac</strong>, <strong>2025new</strong>)<br>
+      Find yours at <a href="https://www.thebluealliance.com/events" target="_blank" style="color:#3949ab">thebluealliance.com/events</a>
+    </div>
+    <div id="home-status"></div>
+  </div>
+  ${state.teams.length?`<div class="card" style="cursor:pointer;border-color:#c5cae9" onclick="state.screen='teams';render()">
+    <h2 style="margin-bottom:6px">▶ Continue Scouting</h2>
+    <div style="font-size:14px;color:#3949ab;font-weight:500">${state.eventName||state.eventCode}</div>
+    <div style="font-size:13px;color:#777;margin-top:4px">${state.teams.length} teams · ${Object.values(state.scoutedData).reduce((a,v)=>a+(v?.length||0),0)} match entries recorded</div>
+  </div>`:''}`;
+}
+
+async function loadEvent(){
+  const ec=(document.getElementById('ec')?.value||'').trim().toLowerCase();
+  if(!ec){setHS('Enter a TBA event key first.','warn');return;}
+
+  const btn=document.getElementById('load-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Loading…';}
+  setHS('Fetching event from The Blue Alliance…','info');
+
+  try{
+    // 1. Verify event exists and get name
+    const evInfo=await tba(`/event/${ec}/simple`);
+    state.eventCode=ec;
+    state.eventName=evInfo.name||ec;
+
+    // 2. Teams at event
+    setHS(`Found: ${evInfo.name}. Loading teams…`,'info');
+    const teamsRaw=await tba(`/event/${ec}/teams/simple`);
+    if(!teamsRaw||!teamsRaw.length) throw new Error('No teams found for this event. Check the event key.');
+    state.teams=teamsRaw.map(t=>({
+      number:t.team_number,
+      name:t.nickname||String(t.team_number),
+      city:t.city||'',
+      state:t.state_prov||''
+    })).sort((a,b)=>a.number-b.number);
+
+    // 3. Qual schedule
+    setHS(`${state.teams.length} teams loaded! Fetching schedule…`,'info');
+    try{
+      const matches=await tba(`/event/${ec}/matches/simple`);
+      state.qualMatches=(matches||[])
+        .filter(m=>m.comp_level==='qm')
+        .map(m=>({
+          matchNum:m.match_number,
+          red:(m.alliances?.red?.team_keys||[]).map(k=>parseInt(k.replace('frc',''))),
+          blue:(m.alliances?.blue?.team_keys||[]).map(k=>parseInt(k.replace('frc','')))
+        }))
+        .sort((a,b)=>a.matchNum-b.matchNum);
+      setHS(`✓ ${state.teams.length} teams + ${state.qualMatches.length} qual matches loaded!`,'success');
+    }catch(e){
+      state.qualMatches=[];
+      setHS(`✓ ${state.teams.length} teams loaded (schedule not yet posted).`,'success');
+    }
+
+    await saveStorage();
+    setTimeout(()=>{state.screen='teams';render();},900);
+  }catch(e){
+    setHS('Error: '+e.message,'error');
+    if(btn){btn.disabled=false;btn.textContent='Load Teams';}
+  }
+}
+
+function setHS(msg,type){
+  const el=document.getElementById('home-status');
+  if(el)el.innerHTML=`<div class="status ${type}">${msg}</div>`;
+}
+
+/* ── TEAMS ── */
+function renderTeams(){
+  const avail=state.teams.filter(t=>!state.unavailable.includes(t.number));
+  const unavail=state.teams.filter(t=>state.unavailable.includes(t.number));
+  const total=Object.values(state.scoutedData).reduce((a,v)=>a+(v?.length||0),0);
+  return`
+  <button class="back-btn" onclick="state.screen='home';render()">← Back</button>
+  <div class="sync-bar"><span class="dot"></span> <strong>${state.eventName||state.eventCode}</strong> &nbsp;·&nbsp; ${state.teams.length} teams &nbsp;·&nbsp; ${total} entries synced</div>
+  <div class="tabs">
+    <div class="tab ${state.activeTab==='scout'?'active':''}" onclick="state.activeTab='scout';render()">Scout</div>
+    <div class="tab ${state.activeTab==='log'?'active':''}" onclick="state.activeTab='log';render()">Match Log</div>
+  </div>
+  ${state.activeTab==='scout'?renderScoutTab(avail,unavail):renderLog()}`;
+}
+
+function renderScoutTab(avail,unavail){
+  return`<div class="card">
+    <h2>Available Teams <span style="font-size:11px;font-weight:400;color:#aaa">· right-click to mark unavailable</span></h2>
+    <div class="team-grid">
+      ${avail.map(t=>`<div class="team-chip" onclick="openTeam(${t.number})" oncontextmenu="toggleUnavail(event,${t.number})">
+        <div class="tnum">${t.number}</div>
+        <div class="tname">${t.name}</div>
+        ${state.scoutedData[t.number]?.length?`<div class="scouted-badge">✓ ${state.scoutedData[t.number].length} match${state.scoutedData[t.number].length!==1?'es':''}</div>`:''}
+      </div>`).join('')}
+    </div>
+  </div>
+  ${unavail.length?`<div class="card">
+    <h2>Unavailable <span style="font-size:11px;font-weight:400;color:#aaa">· click to restore</span></h2>
+    <div class="team-grid">
+      ${unavail.map(t=>`<div class="team-chip unavailable" onclick="toggleUnavail(event,${t.number})" oncontextmenu="toggleUnavail(event,${t.number})">
+        <div class="tnum">${t.number}</div><div class="tname">${t.name}</div>
+        <div class="unavail-badge">out</div>
+      </div>`).join('')}
+    </div>
+  </div>`:''}`;
+}
+
+function renderLog(){
+  const all=[];
+  Object.entries(state.scoutedData).forEach(([team,ms])=>(ms||[]).forEach(m=>all.push({...m,team})));
+  all.sort((a,b)=>a.matchNum-b.matchNum);
+  if(!all.length)return`<div class="card"><div style="color:#999;font-size:14px">No matches scouted yet. Go to Scout and tap a team.</div></div>`;
+  return`<div class="card"><h2>All Entries (${all.length})</h2>
+    ${all.map(m=>`<div class="match-item">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span class="mnum">Q${m.matchNum} · Team ${m.team}</span>
+        <span class="mresult ${m.result}">${m.result.toUpperCase()}</span>
+      </div>
+      <div style="font-size:11px;color:#666;margin-top:5px">
+        Auto: ${m.autoL1||0}/${m.autoL2||0}/${m.autoL3||0}/${m.autoL4||0} coral · ${m.autoAlgae||0}+${m.autoAlgaeProc||0} algae · mob:${m.mobility||'No'} |
+        Tele: ${m.teleL1||0}/${m.teleL2||0}/${m.teleL3||0}/${m.teleL4||0} coral · ${m.teleAlgae||0}+${m.teleAlgaeProc||0} algae |
+        ${m.endgame||'None'}${m.notes?' · '+m.notes:''}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function toggleUnavail(e,num){
+  e.preventDefault();
+  if(state.unavailable.includes(num)) state.unavailable=state.unavailable.filter(n=>n!==num);
+  else state.unavailable.push(num);
+  saveStorage(); render();
+}
+
+function openTeam(num){
+  state.selectedTeam=num; state._selMatch=null; state._counters={}; state._toggles={};
+  state.screen='team-detail'; render();
+}
+
+/* ── DETAIL ── */
+function renderDetail(){
+  const t=state.teams.find(x=>x.number===state.selectedTeam)||{number:state.selectedTeam,name:''};
+  const matches=state.scoutedData[state.selectedTeam]||[];
+  const teamQuals=state.qualMatches.filter(m=>m.red?.includes(t.number)||m.blue?.includes(t.number));
+  const C=state._counters, T=state._toggles;
+  const cv=f=>C[f]||0;
+  const togs=(g,opts)=>opts.map(o=>`<button class="tog ${T[g]===o?'on':''}" onclick="setTog('${g}','${o}')">${o}</button>`).join('');
+  const ctr=f=>`<div class="ctr-row">
+    <button class="ctr-btn" onclick="adj('${f}',-1)">−</button>
+    <span class="ctr-val" id="c-${f}">${cv(f)}</span>
+    <button class="ctr-btn" onclick="adj('${f}',1)">+</button>
+  </div>`;
+
+  return`
+  <button class="back-btn" onclick="state.screen='teams';render()">← Back to Teams</button>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+      <div style="width:52px;height:52px;border-radius:50%;background:#e8eaf6;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1a237e;flex-shrink:0">${t.number}</div>
+      <div>
+        <div style="font-size:20px;font-weight:700;color:#1a237e">${t.number}</div>
+        <div style="font-size:14px;color:#444">${t.name}</div>
+        ${t.city?`<div style="font-size:12px;color:#999">${t.city}${t.state?', '+t.state:''}</div>`:''}
+      </div>
+    </div>
+
+    <h2>Log Match</h2>
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;color:#555;font-weight:500;display:block;margin-bottom:4px">Select Match</label>
+      ${teamQuals.length
+        ?`<div class="qual-list">${teamQuals.map(m=>`
+          <div class="qual-item ${state._selMatch===m.matchNum?'sel-q':''}" onclick="selMatch(${m.matchNum})">
+            <strong>Q${m.matchNum}</strong>
+            &nbsp;·&nbsp;<span style="color:#c62828">Red: ${m.red.join(', ')}</span>
+            &nbsp;·&nbsp;<span style="color:#1565c0">Blue: ${m.blue.join(', ')}</span>
+          </div>`).join('')}</div>`
+        :`<input type="number" id="man-match" placeholder="Enter match #" style="max-width:160px"
+            value="${state._selMatch||''}" oninput="state._selMatch=+this.value">`
+      }
+    </div>
+
+    <div class="section-title">⚡ Autonomous</div>
+    <label style="font-size:12px;color:#555;font-weight:500">Coral by level</label>
+    <div class="counter-grid">
+      ${['L1','L2','L3','L4'].map(l=>`<div class="counter"><label>${l}</label>${ctr('auto'+l)}</div>`).join('')}
+      <div class="counter"><label>Algae Net</label>${ctr('autoAlgae')}</div>
+      <div class="counter"><label>Algae Proc</label>${ctr('autoAlgaeProc')}</div>
+    </div>
+    <div style="margin-top:12px">
+      <label style="font-size:12px;color:#555;font-weight:500">Mobility</label>
+      <div class="toggle-row">${togs('mobility',['Yes','No'])}</div>
+    </div>
+
+    <div class="section-title">🎮 Teleop</div>
+    <label style="font-size:12px;color:#555;font-weight:500">Coral by level</label>
+    <div class="counter-grid">
+      ${['L1','L2','L3','L4'].map(l=>`<div class="counter"><label>${l}</label>${ctr('tele'+l)}</div>`).join('')}
+      <div class="counter"><label>Algae Net</label>${ctr('teleAlgae')}</div>
+      <div class="counter"><label>Algae Proc</label>${ctr('teleAlgaeProc')}</div>
+    </div>
+    <div style="margin-top:12px">
+      <label style="font-size:12px;color:#555;font-weight:500">Fouls committed</label>
+      <div class="ctr-row" style="justify-content:flex-start;gap:8px;margin-top:4px">
+        <button class="ctr-btn" onclick="adj('fouls',-1)">−</button>
+        <span class="ctr-val" id="c-fouls">${cv('fouls')}</span>
+        <button class="ctr-btn" onclick="adj('fouls',1)">+</button>
+      </div>
+    </div>
+
+    <div class="section-title">🏁 Endgame</div>
+    <label style="font-size:12px;color:#555;font-weight:500">Climb result</label>
+    <div class="toggle-row">${togs('endgame',['None','Park','Shallow','Deep'])}</div>
+    <div style="margin-top:14px">
+      <label style="font-size:12px;color:#555;font-weight:500">Match result</label>
+      <div class="toggle-row">${togs('result',['Win','Loss','Tie'])}</div>
+    </div>
+    <div style="margin-top:14px">
+      <label style="font-size:12px;color:#555;font-weight:500;display:block;margin-bottom:4px">Notes</label>
+      <textarea id="notes" rows="2" style="width:100%" placeholder="Robot issues, defense, strategy…"></textarea>
+    </div>
+    <button class="btn-primary" style="width:100%;margin-top:16px;padding:11px" onclick="saveMatch()">Save Match Entry</button>
+  </div>
+
+  ${matches.length?`<div class="card"><h2>Logged Matches (${matches.length})</h2>
+    ${matches.map((m,i)=>`<div class="match-item">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span class="mnum">Q${m.matchNum}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="mresult ${m.result}">${m.result.toUpperCase()}</span>
+          <button class="btn-sm btn-danger" onclick="delMatch(${i})">✕</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#666;margin-top:5px">
+        Auto: ${m.autoL1||0}/${m.autoL2||0}/${m.autoL3||0}/${m.autoL4||0} coral · algae ${m.autoAlgae||0}+${m.autoAlgaeProc||0} · mob:${m.mobility||'No'} &nbsp;|&nbsp;
+        Tele: ${m.teleL1||0}/${m.teleL2||0}/${m.teleL3||0}/${m.teleL4||0} coral · algae ${m.teleAlgae||0}+${m.teleAlgaeProc||0} &nbsp;|&nbsp;
+        ${m.endgame||'None'}${m.notes?' · '+m.notes:''}
+      </div>
+    </div>`).join('')}
+  </div>`:''}`;
+}
+
+function selMatch(n){state._selMatch=n;render();}
+
+function adj(f,d){
+  state._counters[f]=Math.max(0,(state._counters[f]||0)+d);
+  const el=document.getElementById('c-'+f);
+  if(el)el.textContent=state._counters[f];
+}
+
+function setTog(g,v){state._toggles[g]=v;render();}
+
+function saveMatch(){
+  const mn=state._selMatch||parseInt(document.getElementById('man-match')?.value)||0;
+  if(!mn){alert('Select or enter a match number first.');return;}
+  const C=state._counters,T=state._toggles;
+  const entry={
+    matchNum:mn, result:(T.result||'loss').toLowerCase(),
+    autoL1:C.autoL1||0, autoL2:C.autoL2||0, autoL3:C.autoL3||0, autoL4:C.autoL4||0,
+    autoAlgae:C.autoAlgae||0, autoAlgaeProc:C.autoAlgaeProc||0, mobility:T.mobility||'No',
+    teleL1:C.teleL1||0, teleL2:C.teleL2||0, teleL3:C.teleL3||0, teleL4:C.teleL4||0,
+    teleAlgae:C.teleAlgae||0, teleAlgaeProc:C.teleAlgaeProc||0,
+    fouls:C.fouls||0, endgame:T.endgame||'None',
+    notes:document.getElementById('notes')?.value||''
+  };
+  if(!state.scoutedData[state.selectedTeam]) state.scoutedData[state.selectedTeam]=[];
+  state.scoutedData[state.selectedTeam].push(entry);
+  state._counters={}; state._toggles={}; state._selMatch=null;
+  saveStorage(); render();
+}
+
+function delMatch(i){
+  state.scoutedData[state.selectedTeam].splice(i,1);
+  saveStorage(); render();
+}
+
+loadStorage();
+</script>
+</body>
+</html>
